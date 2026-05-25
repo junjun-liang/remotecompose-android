@@ -4,6 +4,7 @@ package com.example.remotecompose
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.remotecompose.data.remote.RemoteConfigFetcher
@@ -38,7 +39,7 @@ data class MainUiState(
     }
 
     companion object {
-        private const val BASE = "https://api.github.com/repos/achatikyan/remotecompose/contents"
+        private const val BASE = "https://api.github.com/repos/junjun-liang/remotecompose/contents"
 
         fun configUrlForScreen(screenId: String): String {
             return if (screenId == "home") "$BASE/config.rc"
@@ -67,6 +68,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadDocument() {
         val url = configUrl ?: return
+        Log.i("yjie", url)
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
