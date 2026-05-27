@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.remotecompose.data.assistant.GenDocumentClient
 import com.example.remotecompose.data.remote.RemoteConfigFetcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +39,7 @@ data class MainUiState(
     }
 
     companion object {
-        private const val BASE = "https://api.github.com/repos/achatikyan/remotecompose/contents"
+        private const val BASE = "https://api.github.com/repos/junjun-liang/remotecompose/contents"
 
         fun configUrlForScreen(screenId: String): String {
             return if (screenId == "home") "$BASE/config.rc"
@@ -51,6 +52,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+
+    private val genDocumentClient = GenDocumentClient(application)
 
     private var configUrl: String? = null
     private var loadJob: Job? = null
@@ -78,6 +81,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         val changed = !bytes.contentEquals(_uiState.value.documentBytes)
                         val updatedTime = if (changed) System.currentTimeMillis() else _uiState.value.lastUpdated
                         _uiState.update { it.copy(isLoading = false, documentBytes = bytes, lastUpdated = updatedTime) }
+                        // 将最新的 .rc 字节流推送给个人助理 App
+                        genDocumentClient.sendBytes(bytes)
                     },
                     onFailure = { e ->
                         _uiState.update {
@@ -99,5 +104,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        genDocumentClient.release()
     }
 }

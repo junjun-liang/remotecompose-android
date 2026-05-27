@@ -4,6 +4,14 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Android 11+ 包可见性：声明需要绑定个人助理的 GenDocumentService -->
+    <queries>
+        <package android:name="com.meizu.assistant" />
+        <intent>
+            <action android:name="com.meizu.assistant.GEN_DOCUMENT_SERVICE" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
